@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>员工管理系统</title>
+    <link rel="stylesheet" href="css/admin_login/animate.min.css">
+    <link rel="stylesheet" href="css/admin_login/login_style.css">
+</head>
+<body class="b" >
+<div class="lg animated zoomIn">
+    <form id="loginForm">
+        <div class="lg_top"></div>
+        <div class="lg_main">
+            <div class="lg_m_1">
+               <div class="inputWrapper">
+                   <input name="username" placeholder="用户名" class="ur" v-model.trim="name" required @keyup="changeName"/>
+                   <div v-show="!nameValid && !nameFlag" class="valid">{{nameContent}}</div>
+               </div>
+                <div class="inputWrapper">
+                    <input name="password" type="password" placeholder="密码" class="pw" v-model="pass" @keyup="changePass" required/>
+                    <div v-show="!passValid && !passFlag" class="valid">{{passContent}}</div>
+                </div>
+               <div class="select">
+                   <input type="radio" name="admin" value="0" v-model="admin" checked>用户
+                   <input type="radio" name="admin" value="1" v-model="admin">管理员
+               </div>
+            </div>
+        </div>
+        <div class="lg_foot">
+            <input type="button" value="点这里登录" class="bn" @click="login"/>
+        </div>
+    </form>
+</div>
+<script src="js/vue.min.js"></script>
+<script src="js/vue-resource.min.js"></script>
+<script src="js/login.js"></script>
+</body>
+</html>
