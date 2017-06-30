@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-cn" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <base href="/">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="renderer" content="webkit">
+    <title>员工管理系统</title>
+    <link rel="stylesheet" href="css/admin_index/admin.css">
+    <link rel="stylesheet" href="css/admin_index/index.css">
+</head>
+<body>
+<div th:replace="admin_header::header"></div>
+<div class="admin">
+    <div class="panel-head"><strong><span class="icon-key"></span>修改管理员姓名</strong></div>
+    <div class="body-content">
+        <div class="form-x"  id="user">
+            <div class="form-group">
+                <div class="label">
+                    <label>管理员姓名：</label>
+                </div>
+                <div class="field">
+                    <label style="line-height:33px;">
+                        <span th:text="${session.admin.staffName}" ref="staffName"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="label">
+                    <label for="newName">新的用户名：</label>
+                </div>
+                <div class="field">
+                    <input type="text" v-model.trim = "newUserName" class="input w50" id="newName" name="newName" size="50" placeholder="请输入要修改的用户名" style="width:auto" @keyup="changing"/>
+                    <span class="erro_position" :class="{'erro_tip':erroFlag}">    *限制是2-10的数字或者字母或汉语 &nbsp;  <span></span></span>
+                    <input type="hidden" th:value="${session.admin.staffId}" ref="staffId">
+                    <input type="hidden" th:value="${session.admin.admin}" ref="admin">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="label">
+                    <label></label>
+                </div>
+                <div class="field">
+                    <button class="button bg-main icon-check-square-o submit" type="submit" @click = "change"> 提交</button>
+                    <span class="erro_tip" style="display:inline-block; margin-left:10px; font-size: 12px">{{tip}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="js/vue.min.js"></script>
+<script src="js/vue-resource.min.js"></script>
+<script>
+    var user = new Vue({
+        el:"#user",
+        data:function(){
+            return{
+                erroFlag:false,
+                newUserName:"",
+                tip:""
+            }
+        },
+        methods:{
+            change:function(){
+                var _this = this;
+                if(/[\w|\u4e00-\u9fa5]{2,}/.test(this.newUserName)){
+                    if(!this.repeatFlag){
+                        this.erroFlag = false;
+                        this.$http.put("/admin/changeName",{newName:this.newUserName,staffId:this.$refs.staffId.value,admin:this.$refs.admin.value}).then(function(res){
+                            if(res.bodyText === "success"){
+                                _this.tip = "修改成功";
+                                var staffName = _this.$refs.staffName;
+                                staffName.innerHTML = _this.newUserName;
+                            }
+                        })
+                    }else{
+                            this.tip = "用户名重复"
+                    }
+                }else{
+                    this.erroFlag = true;
+                }
+            },
+            changing:function(){
+                if(this.repeatFlag){
+                    this.tip = "用户名重复"
+                }else{
+                    this.tip = "";
+                }
+            }
+        },
+        computed:{
+            repeatFlag:function(){
+                return  this.newUserName === this.$refs.staffName.innerHTML;
+            }
+        }
+    })
+</script>
+</body>
+</html>
