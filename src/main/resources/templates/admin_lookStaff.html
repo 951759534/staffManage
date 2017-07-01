@@ -23,9 +23,9 @@
                 <ul class="search" style="padding-left:10px;">
                     <li> <a class="button border-main icon-plus-square-o" href="add.html"> 新增员工</a> </li>
                     <li style="float:right;transform: translateX(-100%)">
-                        <select name="cid" class="input" style="width:200px; line-height:17px;">
-                                <option value="">请选择分类</option>
-                                <option v-for="section in sections"  value="">{{section.sectionName}}</option>
+                        <select name="cid" v-model="selected" class="input" style="width:200px; line-height:17px;" @select="select">
+                                <option value="0">请选择分类</option>
+                                <option v-for="section in sections">{{section.sectionName}}</option>
                         </select>
                     </li>
                 </ul>
@@ -40,16 +40,26 @@
                     <th width="310" class="center">操作</th>
                 </tr>
                 <volist name="list" id="vo">
-                    <tr>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>1111</td>
-                        <td>产品分类</td>
-                        <td>2016-07-01</td>
+                    <tr v-for="staff in staffs">
+                        <td>{{staff.staffNumber}}</td>
+                        <td>{{staff.staffName}}</td>
+                        <td>{{staff.birthday| fomateDate}}</td>
+                        <td>{{staff.position}}</td>
+                        <td>{{staff.hireDay| fomateDate}}</td>
                         <td><div class="button-group"> <a class="button border-main" href="add.html"><span class="icon-edit"></span> 修改</a> <a class="button border-red" href="javascript:void(0)" onclick="return del(1,1,1)"><span class="icon-trash-o"></span> 撤职</a> </div></td>
                     </tr>
                     <tr>
-                        <td colspan="8"><div class="pagelist"> <a href="">上一页</a> <span class="current">1</span><a href="">2</a><a href="">3</a><a href="">下一页</a><a href="">尾页</a> </div></td>
+                        <td colspan="8">
+                            <div class="pagelist">
+                            <a @click = "startPage">首页</a>
+                            <a @click = "prevPage">上一页</a>
+                            <span id="page">
+                                        <a href="javascript:;" v-for="index in totalPages" :class="{current:currentPage == index}" @click="changePage(index)">{{index}}</a>
+                                    </span>
+                            <a @click = "nextPage">下一页</a>
+                            <a @click = "endPage">尾页</a>
+                            </div>
+                        </td>
                     </tr>
             </table>
         </div>
@@ -62,13 +72,71 @@
             el:"#listform",
             data:function(){
                 return{
-                    sections:Array
+                    sections:Array,
+                    currentPage:1,
+                    totalPages:1,
+                    isFirst:true,
+                    isLast:true,
+                    staffs:Array,
+                    selected:0
                 }
             },
             created:function(){
                 this.$http.get("/section/getAllSection").then(function(res){
                     this.sections = res.body;
-                })
+                });
+                this.getAllStaff();
+            },
+            methods: {
+                getAllStaff:function(){
+                   var _this = this;
+                    this.$http.get("/admin/getAllStaff",{
+                        params: {
+                            currentPage: this.currentPage-1,
+                            pageSize: 3
+                        }
+                    }).then(function (res) {
+                        _this.isFirst = res.body.first;
+                        _this.isLast = res.body.last;
+                        _this.staffs = res.body.content;
+                        _this.totalPages = res.body.totalPages;
+                    });
+                },
+                startPage:function(){
+                    this.currentPage = 1;
+                    this.getAllStaff();
+                },
+                endPage: function () {
+                    this.currentPage = this.totalPages;
+                    this.getAllStaff();
+                },
+                changePage: function (index) {
+                    this.currentPage = index;
+                    this.getAllStaff();
+                },
+                prevPage: function () {
+                    this.currentPage--;
+                    if (this.currentPage < 1) {
+                        this.currentPage = 1;
+                    }
+                    this.getAllStaff();
+                },
+                nextPage: function () {
+                    this.currentPage++;
+                    if (this.currentPage > this.totalPages) {
+                        this.currentPage = this.totalPages;
+                    }
+                    this.getAllStaff();
+                },
+                select:function(){
+                    console.log(this.selected)
+                }
+            },
+            filters:{
+                fomateDate:function(data){
+                    var newDate = new Date(data);
+                    return newDate.getFullYear()+"-"+(newDate.getMonth()+1)+"-"+newDate.getDate();
+                }
             }
         })
     })()
