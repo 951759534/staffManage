@@ -23,9 +23,9 @@
                 <ul class="search" style="padding-left:10px;">
                     <li> <a class="button border-main icon-plus-square-o" href="add.html"> 新增员工</a> </li>
                     <li style="float:right;transform: translateX(-100%)">
-                        <select name="cid" v-model="selected" class="input" style="width:200px; line-height:17px;" @select="select">
-                                <option value="0">请选择分类</option>
-                                <option v-for="section in sections">{{section.sectionName}}</option>
+                        <select name="cid" v-model="selected" class="input" style="width:200px; line-height:17px;" @change="select">
+                                <option value="all">请选择分类</option>
+                                <option v-for="section in sections" :value="section.sectionId">{{section.sectionName}}</option>
                         </select>
                     </li>
                 </ul>
@@ -48,7 +48,7 @@
                         <td>{{staff.hireDay| fomateDate}}</td>
                         <td><div class="button-group"> <a class="button border-main" href="add.html"><span class="icon-edit"></span> 修改</a> <a class="button border-red" href="javascript:void(0)" onclick="return del(1,1,1)"><span class="icon-trash-o"></span> 撤职</a> </div></td>
                     </tr>
-                    <tr>
+                    <tr v-show="this.staffs.length">
                         <td colspan="8">
                             <div class="pagelist">
                             <a @click = "startPage">首页</a>
@@ -74,11 +74,12 @@
                 return{
                     sections:Array,
                     currentPage:1,
+                    pageSize:3,
                     totalPages:1,
                     isFirst:true,
                     isLast:true,
                     staffs:Array,
-                    selected:0
+                    selected:"all"
                 }
             },
             created:function(){
@@ -93,7 +94,7 @@
                     this.$http.get("/admin/getAllStaff",{
                         params: {
                             currentPage: this.currentPage-1,
-                            pageSize: 3
+                            pageSize: this.pageSize
                         }
                     }).then(function (res) {
                         _this.isFirst = res.body.first;
@@ -129,7 +130,27 @@
                     this.getAllStaff();
                 },
                 select:function(){
-                    console.log(this.selected)
+                    this.currentPage = 1;
+                    switch (this.selected){
+                       case "all":{
+                           this.getAllStaff();
+                       }
+                       break;
+                       default :{
+                           this.getStaffByName();
+                       }
+                   }
+                },
+                getStaffByName:function(){
+                    var _this = this;
+                    this.$http.get("/admin/getStaffBySectionName",{params:{sectionId:this.selected,currentPage:this.currentPage,size:this.pageSize}}).then(function(res){
+                        console.log(res);
+                        _this.staffs = res.body.content;
+                        _this.isFirst = res.body.first;
+                        _this.isLast = res.body.last;
+                        _this.staffs = res.body.content;
+                        _this.totalPages = res.body.totalPages;
+                    })
                 }
             },
             filters:{
