@@ -21,7 +21,7 @@
         <div class="panel admin-panel">
             <div class="padding border-bottom">
                 <ul class="search" style="padding-left:10px;">
-                    <li> <a class="button border-main icon-plus-square-o" href="add.html"> 新增员工</a> </li>
+                    <li @click="addNewStaff"> <a class="button border-main icon-plus-square-o" href="javascript:;"> 新增员工</a> </li>
                     <li style="float:right;transform: translateX(-100%)">
                         <select name="cid" v-model="selected" class="input" style="width:200px; line-height:17px;" @change="select">
                                 <option value="all">请选择分类</option>
@@ -46,7 +46,7 @@
                         <td>{{staff.birthday| fomateDate}}</td>
                         <td>{{staff.position}}</td>
                         <td>{{staff.hireDay| fomateDate}}</td>
-                        <td><div class="button-group"> <a class="button border-main" href="add.html"><span class="icon-edit"></span> 修改</a> <a class="button border-red" href="javascript:void(0)" onclick="return del(1,1,1)"><span class="icon-trash-o"></span> 撤职</a> </div></td>
+                        <td><div class="button-group"> <a class="button border-main" @click="addNewStaff" href="javascript:;"><span class="icon-edit"></span> 修改</a> <a class="button border-red" href="javascript:;" onclick="alert('待完成')"><span class="icon-trash-o"></span> 撤职</a> </div></td>
                     </tr>
                     <tr v-show="this.staffs.length">
                         <td colspan="8">
@@ -97,6 +97,7 @@
                             pageSize: this.pageSize
                         }
                     }).then(function (res) {
+                        console.log(res);
                         _this.isFirst = res.body.first;
                         _this.isLast = res.body.last;
                         _this.staffs = res.body.content;
@@ -105,45 +106,37 @@
                 },
                 startPage:function(){
                     this.currentPage = 1;
-                    this.getAllStaff();
+                    this.getResult();
                 },
                 endPage: function () {
                     this.currentPage = this.totalPages;
-                    this.getAllStaff();
+                    this.getResult();
                 },
                 changePage: function (index) {
                     this.currentPage = index;
-                    this.getAllStaff();
+                    this.getResult();
                 },
                 prevPage: function () {
                     this.currentPage--;
                     if (this.currentPage < 1) {
                         this.currentPage = 1;
                     }
-                    this.getAllStaff();
+                    this.getResult();
                 },
                 nextPage: function () {
                     this.currentPage++;
                     if (this.currentPage > this.totalPages) {
                         this.currentPage = this.totalPages;
                     }
-                    this.getAllStaff();
+                    this.getResult();
                 },
                 select:function(){
                     this.currentPage = 1;
-                    switch (this.selected){
-                       case "all":{
-                           this.getAllStaff();
-                       }
-                       break;
-                       default :{
-                           this.getStaffByName();
-                       }
-                   }
+                    this.getResult();
                 },
                 getStaffByName:function(){
                     var _this = this;
-                    this.$http.get("/admin/getStaffBySectionName",{params:{sectionId:this.selected,currentPage:this.currentPage,size:this.pageSize}}).then(function(res){
+                    this.$http.get("/admin/getStaffBySectionName",{params:{sectionId:this.selected,currentPage:this.currentPage - 1,size:this.pageSize}}).then(function(res){
                         console.log(res);
                         _this.staffs = res.body.content;
                         _this.isFirst = res.body.first;
@@ -151,6 +144,20 @@
                         _this.staffs = res.body.content;
                         _this.totalPages = res.body.totalPages;
                     })
+                },
+                getResult:function(){
+                    switch (this.selected){
+                        case "all":{
+                            this.getAllStaff();
+                        }
+                            break;
+                        default :{
+                            this.getStaffByName();
+                        }
+                    }
+                },
+                addNewStaff:function(){
+                    alert("待完成");
                 }
             },
             filters:{
