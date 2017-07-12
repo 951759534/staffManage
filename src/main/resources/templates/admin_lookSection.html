@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <base href="/">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="renderer" content="webkit">
+    <title>员工管理系统</title>
+    <link rel="stylesheet" href="css/admin_index/admin.css">
+    <link rel="stylesheet" href="css/admin_index/index.css">
+    <script src="js/vue.min.js"></script>
+    <script src="js/vue-resource.min.js"></script>
+
+</head>
+<body style="background-color:#f2f9fd;" id="lookSection">
+<div th:replace="admin_header::header"></div>
+<div class="admin">
+    <div id="listform">
+        <div class="panel admin-panel">
+            <div class="padding border-bottom">
+                <ul class="search" style="padding-left:10px;">
+                    <li @click="addSection"> <a class="button border-main icon-plus-square-o" href="javascript:;">添加部门</a> </li>
+                </ul>
+            </div>
+            <table class="table table-hover text-center">
+                <tr>
+                    <th width="100" style="text-align:left; padding-left:20px;"></th>
+                    <th width="10%">编号</th>
+                    <th>创建时间</th>
+                    <th>部门名称</th>
+                    <th width="10%" style="text-align:center">员工总数</th>
+                    <th width="310" style="text-align:center">操作</th>
+                </tr>
+                <volist name="list" id="vo">
+                    <tr class="lists" v-for="section,index in sectionContents">
+                        <td style="padding-left:20px;"></td>
+                        <td class="left">{{section.sectionId}}</td>
+                        <td class="left">{{section.buildTime | fomateDate}}</td>
+                        <td class="left">{{section.sectionName}}</td>
+                        <td class="center">{{section.sectionNumber}}</td>
+                        <td>
+                            <div class="button-group" @click="changeSectionName(index)"> <a class="button border-main look" href="javascript:;"><span class="icon-lock"></span>修改部门名称</a>
+                            <a class="button border-red del" href="javascript:;" @click="removeSection(section.sectionId)"><span class="icon-trash-o"></span>解散部门</a>
+                        </div></td>
+                    </tr>
+                    <tr>
+                        <td colspan="8"><div class="pagelist">
+                            <a @click = "startPage">首页</a>
+                            <a @click = "prevPage">上一页</a>
+                            <span id="page">
+                                        <a href="javascript:;" v-for="index in totalPages" :class="{current:currentPage == index}" @click="changePage(index)">{{index}}</a>
+                                    </span>
+                            <a @click = "nextPage">下一页</a>
+                            <a @click = "endPage">尾页</a>
+                        </div></td>
+                    </tr>
+                </volist>
+            </table>
+        </div>
+        <div v-show="addSectionFlag" id="update_tanchu" style="display: none">
+            <div class="lookMask"></div>
+            <div class="form-x looknew">
+                <div class="l_header" @click = "addClose"><span class="x_close">X</span></div>
+                <h5 style="text-align: center;margin-bottom: 20px;">添加部门</h5>
+                    <div class="form-group">
+                        <div class="label">
+                            <label>部门名称：</label>
+                        </div>
+                        <div class="field">
+                            <input @keyup="changeName" id="Utitle" type="text" class="input w50" v-model.trim="addContent" name="section" placeholder="部门名称" autofocus="autofocus" minlength="1" maxlength="30"/>
+                            <span style="float:left;padding:10px 0 0 20px;" :class="{'erro_tip':addErroFlag}"> *限制1-30字符</span>
+                        </div>
+                    </div>
+                    <div class="clear"></div>
+                    <div class="form-group">
+                        <div class="label">
+                            <label></label>
+                        </div>
+                        <div class="field">
+                            <button class="button bg-main icon-check-square-o" id="Usubmit" type="submit" @click="add"> 添加</button>
+                            <span class="erro_tip">{{erroTip}}</span>
+                        </div>
+                    </div>
+            </div>
+        </div>
+        <div v-show="changeContentFlag" id="update_tanchu" style="display: none">
+            <div class="lookMask"></div>
+            <div class="form-x looknew">
+                <div class="l_header" @click = "changeClose"><span class="x_close">X</span></div>
+                <h5 style="text-align: center;margin-bottom: 20px;">修改部门名称</h5>
+                <div class="form-group">
+                    <div class="label">
+                        <label>部门名称：</label>
+                    </div>
+                    <div class="field">
+                        <input @keyup="changeName" id="Utitle" type="text" class="input w50" v-model.trim="changeContent" name="section" placeholder="部门名称" autofocus="autofocus" minlength="1" maxlength="30"/>
+                        <span style="float:left;padding:10px 0 0 20px;" :class="{'erro_tip':addErroFlag}"> *限制1-30字符</span>
+                    </div>
+                </div>
+                <div class="clear"></div>
+                <div class="form-group">
+                    <div class="label">
+                        <label></label>
+                    </div>
+                    <div class="field">
+                        <button class="button bg-main icon-check-square-o" id="Usubmit" type="submit" @click="update"> 修改</button>
+                        <span class="erro_tip" >{{erroTip}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div style="text-align:center;"></div>
+
+<script>
+    (function(){
+        new Vue({
+            el:"#listform",
+            data:function(){
+                return{
+                    currentPage:1,
+                    allCount:0,
+                    size:3,
+                    sectionContents:Array,
+                    totalPages:1,
+                    addSectionFlag:false,
+                    addErroFlag:false,
+                    addContent:"",
+                    erroTip:"",
+                    changeContent:"",
+                    changeContentFlag:false
+                }
+            },
+            methods: {
+                startPage: function () {
+                    this.currentPage = 1;
+                    this.getContent();
+                },
+                getContent: function () {
+                    var _this = this;
+                    this.$http.get("/admin/getSection", {
+                        params: {
+                            pageSize: this.size,
+                            currentPage: this.currentPage - 1
+                        }
+                    }).then(function (res) {
+                        _this.sectionContents = res.data.content;
+                        _this.isSectionEnd = res.data.last;
+                        _this.isFirst = res.data.first;
+                        _this.totalPages = res.data.totalPages;
+                    })
+                },
+                endPage: function () {
+                    this.currentPage = this.totalPages;
+                    this.getContent();
+                },
+                changePage: function (index) {
+                    this.currentPage = index;
+                    this.getContent();
+                },
+                prevPage: function () {
+                    this.currentPage--;
+                    if (this.currentPage < 1) {
+                        this.currentPage = 1;
+                    }
+                    this.getContent();
+                },
+                nextPage: function () {
+                    this.currentPage++;
+                    if (this.currentPage > this.totalPages) {
+                        this.currentPage = this.totalPages;
+                    }
+                    this.getContent();
+                },
+                removeSection: function (index) {
+                    var _this = this;
+                    if (confirm("是否要解散部门")) {
+                        this.$http.get("/admin/removeSection", {
+                            params: {
+                                id: index,
+                                currentPage: this.isSectionEnd && this.sectionContents.length === 1 ? this.currentPage - 2 : this.currentPage - 1,
+                                size: this.size
+                            }
+                        }).then(function (res) {
+                            _this.currentPage = this.isSectionEnd && this.sectionContents.length === 1 ? _this.currentPage - 1 : _this.currentPage;
+                            _this.sectionContents = res.data.content;
+                            _this.isSectionEnd = res.data.last;
+                            _this.isFirst = res.data.first;
+                            _this.totalPages = res.data.totalPages;
+                        })
+                    }
+                },
+                addSection: function () {
+                    this.addSectionFlag = true;
+                },
+                addClose: function () {
+                    this.addSectionFlag = false;
+                },
+                add: function () {
+                    if (this.addContent.length < 1 || this.addContent.length > 30) {
+                        this.addErroFlag = true;
+                    } else {
+                        var _this = this;
+                        this.$http.get("/admin/getName", {params: {sectionName: this.addContent}}).then(function (res) {
+                            if (res.bodyText === "noRepeat") {
+                                _this.addErroFlag = false;
+                                _this.$http.get("/section/saveSection", {params: {section: _this.addContent}}).then(function (res) {
+                                    if (res.bodyText === "success") {
+                                        location.reload();
+                                    } else {
+                                        _this.erroTip = "修改失败";
+                                    }
+                                })
+                            } else {
+                                this.erroTip = "部门名称重复";
+                            }
+                        })
+                    }
+                },
+                changeName: function () {
+                    this.erroTip = "";
+                },
+                changeSectionName: function (index) {
+                    console.log(1);
+                    this.changeContentFlag = true;
+                    this.changeContent = this.sectionContents[index].sectionName;
+                },
+                changeClose: function () {
+                    this.changeContentFlag = false;
+                },
+                update: function () {
+                    if (this.changeContent.length < 1 || this.changeContent.length > 30) {
+                        this.addErroFlag = true;
+                    } else {
+                        var _this = this;
+                        this.$http.get("/admin/getName", {params: {sectionName: this.changeContent}}).then(function (res) {
+                            console.log(res);
+                            if (res.bodyText === "noRepeat") {
+                                _this.addErroFlag = false;
+                                _this.$http.get("/section/updateSection", {params: {section: _this.changeContent}}).then(function (res) {
+                                    if (res.bodyText === "success") {
+                                        location.reload();
+                                    } else {
+                                        _this.erroTip = "修改失败";
+                                    }
+                                })
+                            } else {
+                                this.erroTip = "部门名称重复";
+                            }
+                        })
+                    }
+                }
+            },
+            created:function(){
+                this.getContent();
+            },
+            filters:{
+                fomateDate:function(data){
+                    var newDate = new Date(data);
+                    return newDate.getFullYear()+"-"+(newDate.getMonth()+1)+"-"+newDate.getDate()
+                }
+            }
+        })
+
+    })()
+</script>
+
+</body>
+</html>

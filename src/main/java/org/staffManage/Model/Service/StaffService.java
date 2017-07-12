@@ -67,10 +67,12 @@ public class StaffService {
         return staffRepository.findByIsHiring("是",pageable);
     }
 
-    public Page getAllStaffBySectioId(int sectionId,int page,int size){
-        Sort sort = new Sort(Sort.Direction.DESC,"Staff.staffId");
-        Pageable pageable = new PageRequest(page,size,sort);
 
-        return staffRepository.findByIsHiringAndSectionId("是",sectionId,pageable);
+
+    public Page getAllStaffBySectioId(int sectionId,int page,int size){
+        Sort sort = new Sort(Sort.Direction.DESC,"staffId");
+        Pageable pageable = new PageRequest(page,size,sort);
+        System.out.println(page);
+        return staffRepository.findByIsHiringAndSection_SectionId("是",sectionId,pageable);
     }
 }

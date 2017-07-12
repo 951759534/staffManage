@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <base href="/">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="renderer" content="webkit">
+    <title>员工管理系统</title>
+    <link rel="stylesheet" href="css/admin_index/index.css">
+    <link rel="stylesheet" href="css/admin_index/admin.css">
+
+</head>
+<body style="background-color:#f2f9fd;">
+
+<div th:replace="admin_header::header"></div>
+<div class="admin">
+    <div id="listform">
+        <div class="panel admin-panel">
+            <div class="panel-head"><strong class="icon-reorder"> 查看管理员</strong> <a href="" style="float:right; display:none;">添加字段</a></div>
+            <table class="table table-hover text-center">
+                <tr>
+                    <th width="100" style="text-align:left; padding-left:20px;">管理员姓名</th>
+                    <th width="10%">性别</th>
+                    <th>员工编号</th>
+                    <th width="310" align="right">操作</th>
+                </tr>
+                <volist name="list" id="vo">
+                    <tr>
+                        <td style="text-align:left; padding-left:20px;">zz</td>
+                        <td>男</td>
+                        <td>zz</td>
+                        <td><div><a class="button border-red"><span class="icon-trash-o"></span> 删除</a></div></td>
+                    </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<div style="text-align:center;">
+</div>
+
+</body>
+</html>
